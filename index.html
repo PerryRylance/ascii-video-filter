@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>ASCII Welder</title>
+		<script
+			src="https://code.jquery.com/jquery-3.5.1.js"
+			integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+			crossorigin="anonymous"></script>
+		<style>
+		</style>
+	</head>
+	<body>
+		<video 
+			width="1280"
+			height="720"
+			muted
+			loop
+			autoplay>
+			<source src="stock.mp4" type="video/mp4">
+		</video>
+		
+		<canvas id="buffer" width="128" height="72"></canvas>
+		<canvas id="dst" width="1280" height="720"></canvas>
+		
+		<script>
+		
+		$(window).on("load", function(event) {
+		
+			let video		= $("video")[0];
+			let buffer		= $("canvas#buffer")[0].getContext("2d");
+			let dst			= $("canvas#dst")[0].getContext("2d");
+			let pre			= document.createElement("canvas");
+			let pixels;
+			
+			let columns		= 128;
+			let rows		= 72;
+			
+			let sx, sy, r, g, b, a, i, dx, dy, chr;
+			
+			let chars = "0123456789abcdef";
+			
+			let fontHeight = 12, characterWidth;
+
+			// Get character dimensions
+			dst.textBaseline = "top";
+			dst.font = `${fontHeight}px monospace`;
+			
+			characterWidth = dst.measureText("@").width;
+			
+			// Pre-render
+			pre.width = characterWidth * chars.length;
+			pre.height = fontHeight;
+			
+			pre = pre.getContext("2d");
+			
+			// NB: Pre-caching won't help unless we can affect the colour when blitting to the dest
+			for(i = 0; i < chars.length; i++)
+			{
+				
+			}
+			
+			// Render loop
+			let onAnimationFrame = () => {
+			
+				buffer.drawImage(video, 0, 0, 1280, 720, 0, 0, 128, 72);
+				
+				pixels = buffer.getImageData(0, 0, 128, 72);
+				
+				dst.fillStyle = "black";
+				dst.fillRect(0, 0, 1280, 720);
+				
+				for(sx = 0; sx < columns; sx++)
+					for(sy = 0; sy < columns; sy++)
+					{
+						i = 4 * ((sy * columns) + sx);
+						
+						r = pixels.data[i];
+						g = pixels.data[i + 1];
+						b = pixels.data[i + 2];
+						
+						dx = sx * characterWidth;
+						dy = sy * fontHeight;
+						
+						chr = chars.substr(Math.floor(Math.random() * chars.length), 1);
+						
+						dst.fillStyle = `rgb(${r},${g},${b})`;
+						dst.fillText(chr, dx, dy);
+					}
+			
+				requestAnimationFrame(onAnimationFrame);
+				
+			};
+			
+			requestAnimationFrame(onAnimationFrame);
+		
+		});
+		
+		</script>
+	</body>
+</html>
